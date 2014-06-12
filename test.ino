@@ -40,7 +40,7 @@
 #define YELLOW          0xFFE0  
 #define WHITE           0xFFFF
 
-#include "Adafruit_GFX.h"
+#include "Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351.h"
 
 // Option 1: use any pins but a little slower

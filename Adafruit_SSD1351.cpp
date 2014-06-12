@@ -16,9 +16,9 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#include "Adafruit_GFX.h"
+#include "Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351.h"
-#include "glcdfont.c"
+//#include "glcdfont.c"
 
 
 /********************************** low level pin interface */
