@@ -18,7 +18,14 @@
 
 #include "Adafruit_mfGFX.h"
 #include "Adafruit_SSD1351.h"
-//#include "glcdfont.c"
+
+
+#if !defined(PLATFORM_ID)		// Core v0.3.4
+#warning "CORE 0.3.4"
+  #define pinSetFast(_pin)	PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin
+  #define pinResetFast(_pin)	PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin
+  #define digitalWriteFast(pin, value)	(value) ? pinSetFast(pin) : pinResetFast(pin)
+#endif
 
 
 /********************************** low level pin interface */
@@ -36,14 +43,18 @@ inline void Adafruit_SSD1351::spiwrite(uint8_t c) {
  
 	//Software SPI, MSB first
 	for (uint8_t bit = 0; bit < 8; bit++)  {
-		PIN_MAP[_sclk].gpio_peripheral->BRR = PIN_MAP[_sclk].gpio_pin; // Clock Low
+		//PIN_MAP[_sclk].gpio_peripheral->BRR = PIN_MAP[_sclk].gpio_pin; // Clock Low
+		pinResetFast(_sclk);
 		
 		if (c & (1 << (7-bit)))		// walk down mask from bit 7 to bit 0
-			PIN_MAP[_sid].gpio_peripheral->BSRR = PIN_MAP[_sid].gpio_pin; // Data High
+			//PIN_MAP[_sid].gpio_peripheral->BSRR = PIN_MAP[_sid].gpio_pin; // Data High
+			pinSetFast(_sid);
 		else
-			PIN_MAP[_sid].gpio_peripheral->BRR = PIN_MAP[_sid].gpio_pin; // Data Low
+			//PIN_MAP[_sid].gpio_peripheral->BRR = PIN_MAP[_sid].gpio_pin; // Data Low
+			pinResetFast(_sid);
 			
-		PIN_MAP[_sclk].gpio_peripheral->BSRR = PIN_MAP[_sclk].gpio_pin; // Clock High
+		//PIN_MAP[_sclk].gpio_peripheral->BSRR = PIN_MAP[_sclk].gpio_pin; // Clock High
+		pinSetFast(_sclk);
 	}
 
 }
@@ -51,24 +62,24 @@ inline void Adafruit_SSD1351::spiwrite(uint8_t c) {
 
 void Adafruit_SSD1351::writeCommand(uint8_t c) {
 
-    digitalWrite(_rs, LOW);
-    digitalWrite(_cs, LOW);
+    digitalWriteFast(_rs, LOW);
+    digitalWriteFast(_cs, LOW);
     
     //Serial.print("C ");
     spiwrite(c);
     
-    digitalWrite(_cs, HIGH);
+    digitalWriteFast(_cs, HIGH);
 }
 
 
 void Adafruit_SSD1351::writeData(uint8_t c) {
-    digitalWrite(_rs, HIGH);
-    digitalWrite(_cs, LOW);
+    digitalWriteFast(_rs, HIGH);
+    digitalWriteFast(_cs, LOW);
     
 //    Serial.print("D ");
     spiwrite(c);
     
-    digitalWrite(_cs, HIGH);
+    digitalWriteFast(_cs, HIGH);
 } 
 
 /***********************************/
@@ -222,13 +233,13 @@ void Adafruit_SSD1351::drawPixel(int16_t x, int16_t y, uint16_t color)
   goTo(x, y);
   
   // setup for data
-  digitalWrite(_rs, HIGH);
-  digitalWrite(_cs, LOW);
+  digitalWriteFast(_rs, HIGH);
+  digitalWriteFast(_cs, LOW);
   
   spiwrite(color >> 8);    
   spiwrite(color);
   
-  digitalWrite(_cs, HIGH);  
+  digitalWriteFast(_cs, HIGH);  
 }
 
 void Adafruit_SSD1351::begin(void) {
